@@ -3,6 +3,15 @@ import { generateShortCode } from "@/lib/short-code";
 import { createLinkSchema } from "@/lib/validators";
 import { NextRequest, NextResponse } from "next/server";
 
+function getAppUrl() {
+  const appUrl = process.env.APP_URL?.replace(/\/+$/, "");
+
+  if (!appUrl) {
+    throw new Error("APP_URL environment variable is not configured");
+  }
+
+  return appUrl;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,7 +42,7 @@ export async function POST(req: NextRequest) {
         message: "Short URL created successfully",
         data: {
           ...link,
-          shortUrl: `${req.nextUrl.origin}/${link.shortCode}`,
+          shortUrl: `${getAppUrl()}/${link.shortCode}`,
         },
       },
       { status: 201 }
@@ -59,7 +68,7 @@ export async function GET(req: NextRequest) {
 
     const data = links.map((link) => ({
       ...link,
-      shortUrl: `${req.nextUrl.origin}/${link.shortCode}`,
+      shortUrl: `${getAppUrl()}/${link.shortCode}`,
     }));
 
     // console.log(links)

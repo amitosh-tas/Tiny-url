@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface LinkItem {
   id: string;
@@ -18,6 +19,21 @@ interface ApiResponse<T> {
   data: T;
 }
 
+// Fetch links without directly modifying component state.
+async function getLinks(): Promise<LinkItem[]> {
+  const response = await fetch("/api/links", {
+    cache: "no-store",
+  });
+
+  const result: ApiResponse<LinkItem[]> = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Failed to fetch links");
+  }
+
+  return result.data;
+}
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [links, setLinks] = useState<LinkItem[]>([]);
@@ -27,34 +43,40 @@ export default function Home() {
   const [createdUrl, setCreatedUrl] = useState("");
   const [copiedCode, setCopiedCode] = useState("");
 
-  const fetchLinks = useCallback(async () => {
-    try {
-      const response = await fetch("/api/links", {
-        cache: "no-store",
-      });
-
-      const result: ApiResponse<LinkItem[]> = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to fetch links");
-      }
-
-      setLinks(result.data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Initial link loading.
   useEffect(() => {
-    fetchLinks();
-  }, [fetchLinks]);
+    let ignore = false;
+
+    async function loadLinks() {
+      try {
+        const data = await getLinks();
+
+        if (!ignore) {
+          setLinks(data);
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(
+            err instanceof Error ? err.message : "Something went wrong"
+          );
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadLinks();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
+
     setError("");
     setCreatedUrl("");
     setSubmitting(true);
@@ -68,7 +90,8 @@ export default function Home() {
         body: JSON.stringify({ originalUrl: url }),
       });
 
-      const result = await response.json();
+      const result: ApiResponse<{ shortUrl: string }> =
+        await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to shorten URL");
@@ -76,7 +99,10 @@ export default function Home() {
 
       setCreatedUrl(result.data.shortUrl);
       setUrl("");
-      await fetchLinks();
+
+      // Refresh the dashboard after creating a link.
+      const updatedLinks = await getLinks();
+      setLinks(updatedLinks);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Something went wrong"
@@ -90,6 +116,7 @@ export default function Home() {
     try {
       await navigator.clipboard.writeText(shortUrl);
       setCopiedCode(code);
+
       setTimeout(() => setCopiedCode(""), 1800);
     } catch {
       setError("Unable to copy URL");
@@ -105,6 +132,7 @@ export default function Home() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold">
               ↗
             </div>
+
             <span className="text-xl font-semibold tracking-tight">
               tiny<span className="text-blue-500">url</span>
             </span>
@@ -174,6 +202,7 @@ export default function Home() {
                 <p className="mb-1 text-xs text-emerald-400">
                   Your short URL is ready!
                 </p>
+
                 <Link
                   href={createdUrl}
                   target="_blank"
@@ -186,9 +215,7 @@ export default function Home() {
 
               <button
                 type="button"
-                onClick={() =>
-                  copyUrl(createdUrl, "created")
-                }
+                onClick={() => copyUrl(createdUrl, "created")}
                 className="rounded-lg border border-zinc-700 px-4 py-2 text-sm transition hover:bg-zinc-800"
               >
                 {copiedCode === "created" ? "Copied!" : "Copy"}
@@ -221,6 +248,7 @@ export default function Home() {
               <p className="text-lg font-medium text-zinc-300">
                 No links yet
               </p>
+
               <p className="mt-2 text-sm text-zinc-500">
                 Your shortened URLs will appear here.
               </p>
@@ -244,6 +272,7 @@ export default function Home() {
                       <p className="mb-1 text-xs text-zinc-500 sm:hidden">
                         Original URL
                       </p>
+
                       <p
                         title={link.originalUrl}
                         className="truncate text-sm text-zinc-300"
@@ -271,7 +300,9 @@ export default function Home() {
 
                       <button
                         type="button"
-                        onClick={() => copyUrl(link.shortUrl, link.shortCode)}
+                        onClick={() =>
+                          copyUrl(link.shortUrl, link.shortCode)
+                        }
                         title="Copy short URL"
                         className="shrink-0 whitespace-nowrap rounded-lg border border-zinc-800 px-3 py-2 text-xs text-zinc-400 transition hover:border-zinc-600 hover:text-white"
                       >

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 interface LinkItem {
@@ -100,7 +101,7 @@ export default function Home() {
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
         {/* Header */}
         <header className="mb-20 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold">
               ↗
             </div>
@@ -173,7 +174,7 @@ export default function Home() {
                 <p className="mb-1 text-xs text-emerald-400">
                   Your short URL is ready!
                 </p>
-                <a
+                <Link
                   href={createdUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -257,7 +258,7 @@ export default function Home() {
                           Short URL
                         </p>
 
-                        <a
+                        <Link
                           href={link.shortUrl}
                           target="_blank"
                           rel="noreferrer"

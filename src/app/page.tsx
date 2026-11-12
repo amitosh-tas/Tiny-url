@@ -108,7 +108,7 @@ export default function Home() {
             <span className="text-xl font-semibold tracking-tight">
               tiny<span className="text-blue-500">url</span>
             </span>
-          </a>
+          </Link>
 
           <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
             ● System operational
@@ -181,7 +181,7 @@ export default function Home() {
                   className="break-all text-sm font-medium text-zinc-100 hover:text-blue-400"
                 >
                   {createdUrl}
-                </a>
+                </Link>
               </div>
 
               <button
@@ -266,7 +266,7 @@ export default function Home() {
                           className="block truncate text-sm font-medium text-blue-400 hover:text-blue-300"
                         >
                           {link.shortUrl}
-                        </a>
+                        </Link>
                       </div>
 
                       <button

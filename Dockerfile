@@ -35,4 +35,5 @@ RUN pnpm build
 EXPOSE 3000
 
 # Run migrations and start application
-CMD ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm start"]
+# CMD ["sh", "-c", "pnpm exec prisma migrate deploy && pnpm start"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node .next/standalone/server.js"]

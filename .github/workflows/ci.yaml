@@ -104,4 +104,4 @@ jobs:
             -o IdentitiesOnly=yes \
             -o StrictHostKeyChecking=yes \
             "$EC2_USER@$EC2_HOST" \
-            'cd ~/tinyurl && docker compose pull && docker compose up -d --remove-orphans'
+            'cd ~/tinyurl && sudo docker compose pull && sudo docker compose up -d --remove-orphans'

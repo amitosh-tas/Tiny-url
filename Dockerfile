@@ -32,6 +32,11 @@ RUN mkdir -p /app/data
 # Build Next.js
 RUN pnpm build
 
+# Include static assets in standalone output
+RUN mkdir -p .next/standalone/.next \
+    && cp -r .next/static .next/standalone/.next/static \
+    && if [ -d public ]; then cp -r public .next/standalone/public; fi
+
 EXPOSE 3000
 
 # Run migrations and start application

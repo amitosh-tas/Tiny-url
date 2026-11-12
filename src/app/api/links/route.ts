@@ -32,13 +32,8 @@ export async function POST(req: NextRequest) {
         success: true,
         message: "Short URL created successfully",
         data: {
-          id: link.id,
-          originalUrl: link.originalUrl,
-          shortCode: link.shortCode,
+          ...link,
           shortUrl: `${req.nextUrl.origin}/${link.shortCode}`,
-          clicks: link.clicks,
-          createdAt: link.createdAt,
-          updatedAt: link.updatedAt,
         },
       },
       { status: 201 }
@@ -51,5 +46,39 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
 
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const links = await prisma.link.findMany({
+      orderBy: {
+        createdAt: "desc",
+      }
+    });
+
+    const data = links.map((link) => ({
+      ...link,
+      shortUrl: `${req.nextUrl.origin}/${link.shortCode}`,
+    }));
+
+    // console.log(links)
+
+    return NextResponse.json({
+      success: true,
+      message: "Links fetched successfully!",
+      data
+    })
+
+  } catch (e) {
+    console.error("Fetch links error:", e);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to fetch links",
+      },
+      { status: 500 }
+    );
   }
 }
